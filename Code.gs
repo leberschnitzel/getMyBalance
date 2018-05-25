@@ -17,7 +17,7 @@ function onOpen() {
 
 function HowTo() {
   var ui = SpreadsheetApp.getUi();
-  var result = ui.alert('How To', 'Info: Most exchange wallets will not work with this addon!\nFor all other wallets, follow those steps:\n\n1. Enter "=getMyBalance()" into a cell.\n2. Fill the first string with a wallet address.\n3. Fill the second string with an token shortname, like "BTC", "ETH" or "NANO".\n4. Optional: enter the API Key in the third string and the token contract in the last string.\n4. The cell will now show the ammount of tokens you selected in that wallet.\n\nYou can also point to other cells.\nIf A1 contains a wallet address and A2 contains a token shortname:\n=getMyBalance(A1,A2)\n\nEtherScan API Key\nIf you have many requests, please create your own EtherScan API Key here:\nhttps://etherscan.io/myapikey\nJust add it as last parameter and it will be used automatically.',ui.ButtonSet.OK);
+  var result = ui.alert('How To', 'Info: Most exchange wallets will not work with this addon!\nFor all other wallets, follow those steps:\n\n1. Enter "=getMyWalletBalance()" into a cell.\n2. Fill the first string with a wallet address.\n3. Fill the second string with an token shortname, like "BTC", "ETH" or "NANO".\n4. Optional: enter the API Key in the third string and the token contract in the last string.\n5. The cell will now show the ammount of tokens you selected in that wallet.\n\nYou can also point to other cells.\nIf A1 contains a wallet address and A2 contains a token shortname:\n=getMyWalletBalance(A1,A2)\n\nEtherScan API Key\nIf you have many requests, please create your own EtherScan API Key here:\nhttps://etherscan.io/myapikey\nJust add it as last parameter and it will be used automatically.',ui.ButtonSet.OK);
   if (result == ui.Button.OK) {
  } 
 }
@@ -42,10 +42,10 @@ function getMyWalletBalance (WalletAddress,Token,APIKey,contract)
 {
 //Some light Error Handling
   if (WalletAddress == null){
-    return 'No wallet address and token. getMyBalance("WalletAddress","token"[,"APIKey")]';
+    return 'No wallet address and token. getMyWalletBalance("WalletAddress","token"[,"APIKey")]';
   } 
   if (Token == null){
-    return 'No wallet address or token. getMyBalance("WalletAddress","token"[,"APIKey")]';
+    return 'No wallet address or token. getMyWalletBalance("WalletAddress","token"[,"APIKey")]';
   } else {
     //define standard decimal places of the tokens. Usually 18, but some like OPEN can be 8 or even different ammounts.
     var decimal = Math.pow(10,-18);
