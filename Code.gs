@@ -9,15 +9,23 @@
 function onOpen() {
   SpreadsheetApp.getUi()
   .createMenu("getMyBalance")
-  .addItem("How To", "HowTo")
+  .addItem("getMyWalletBalance", "HowTo1")
+  .addItem("getMyExchangeBalance", "HowTo2")
   .addSeparator()
   .addItem("Donate","donate")
   .addToUi();
 }
 
-function HowTo() {
+function HowTo1() {
   var ui = SpreadsheetApp.getUi();
-  var result = ui.alert('How To', 'Info: Most exchange wallets will not work with this addon!\nFor all other wallets, follow those steps:\n\n1. Enter "=getMyWalletBalance()" into a cell.\n2. Fill the first string with a wallet address.\n3. Fill the second string with an token shortname, like "BTC", "ETH" or "NANO".\n4. Optional: enter the API Key in the third string and the token contract in the last string.\n5. The cell will now show the ammount of tokens you selected in that wallet.\n\nYou can also point to other cells.\nIf A1 contains a wallet address and A2 contains a token shortname:\n=getMyWalletBalance(A1,A2)\n\nEtherScan API Key\nIf you have many requests, please create your own EtherScan API Key here:\nhttps://etherscan.io/myapikey\nJust add it as last parameter and it will be used automatically.',ui.ButtonSet.OK);
+  var result = ui.alert('getMyWalletBalance', 'Info: Most exchange wallets will not work with this addon, try "getMyExchangeWallet" for those!\nFor all other wallets, follow those steps:\n\n1. Enter "=getMyWalletBalance()" into a cell.\n2. Fill the first string with a wallet address.\n3. Fill the second string with an token shortname, like "BTC", "ETH" or "NANO".\n4. Optional: enter the API Key in the third string and the token contract in the last string.\n4. The cell will now show the ammount of tokens you selected in that wallet.\n\nYou can also point to other cells.\nIf A1 contains a wallet address and A2 contains a token shortname:\n=getMyWalletBalance(A1,A2)\n\nEtherScan API Key\nIf you have many requests, please create your own EtherScan API Key here:\nhttps://etherscan.io/myapikey\nJust add it as last parameter and it will be used automatically.',ui.ButtonSet.OK);
+  if (result == ui.Button.OK) {
+ } 
+}
+
+function HowTo2() {
+  var ui = SpreadsheetApp.getUi();
+  var result = ui.alert('getMyExchangeBalance', 'Info: Currently only Bittrex and Binance supported!\n\n1. Enter "=getMyExchangeBalance()" into a cell.\n2. Fill the first string with a exchange name.\n3. Fill the second string with an token shortname, like "BTC", "ETH" or "NANO".\n4. Enter the API Key in the third string and the API Secret in the next string.\n4. The cell will now show the ammount of tokens you selected in that exchange wallet.\n\nYou can also point to other cells.\nIf A1 contains the exchange name and A2 contains a token shortname, A3 the API Key and A4 the API Secret:\n=getMyWalletBalance(A1,A2,A3,A4)',ui.ButtonSet.OK);
   if (result == ui.Button.OK) {
  } 
 }
@@ -54,6 +62,14 @@ function getMyWalletBalance (WalletAddress,Token,APIKey,contract)
     //NANO
     if (Token == "NANO"){
       var response = UrlFetchApp.fetch('http://207.154.228.220:3001/account/' + WalletAddress);
+      var json = response.getContentText();
+      var data = JSON.parse(json);
+      var decimal = Math.pow(10,-0);
+      return data.account.balance * decimal;
+    }
+    //BANANO
+    if (Token == "BAN"){
+      var response = UrlFetchApp.fetch('https://api.creeper.banano.cc/account/' + WalletAddress);
       var json = response.getContentText();
       var data = JSON.parse(json);
       var decimal = Math.pow(10,-0);
@@ -211,7 +227,6 @@ function getMyExchangeBalance (exchange,Token,APIKey,APISecret,Passphrase){
   if ( exchange == "Binance"){
     var api = "/api/v3/account"; // Please input API Endpoint you want.
     var string = "timestamp=" + timestamp; // Please input query parameters for the inputterd API.
-    
     var baseUrl = "https://api.binance.com";
     var signature = Utilities.computeHmacSha256Signature(string, secret);
     signature = signature.map(function(e) {
@@ -226,6 +241,7 @@ function getMyExchangeBalance (exchange,Token,APIKey,APISecret,Passphrase){
     };
     var data = UrlFetchApp.fetch(baseUrl + api + query, params);
     var exchangewallet = JSON.parse(data);
+//    console.log({message: 'BinanceData', initialData: exchangewallet});
     for (var a in exchangewallet.balances) {
       if (Token === exchangewallet.balances[a].asset){
         var balance = exchangewallet.balances[a].free;
@@ -233,4 +249,61 @@ function getMyExchangeBalance (exchange,Token,APIKey,APISecret,Passphrase){
       }
     }
   }
+  if (exchange == "Bittrex"){
+    
+    var key = APIKey
+    var secret = APISecret
+    var baseUrl = 'https://bittrex.com/api/v1.1';
+    var nonce = Math.floor(new Date().getTime()/1000);
+    var command = "/account/getbalances";
+    var uri = baseUrl.concat(command + "?apikey=" + key + "&nonce=" + nonce);
+    var signature = Utilities.computeHmacSignature(Utilities.MacAlgorithm.HMAC_SHA_512,uri,secret);
+    signature = signature.map(function(byte){return ('0' + (byte & 0xFF).toString(16)).slice(-2);}).join('')
+    var headers = {
+      "apisign": signature
+    }
+    var params = {
+      "method": "get",
+      "headers": headers,
+    }
+    var response = UrlFetchApp.fetch(uri, params);
+    var json = JSON.parse(response.getContentText());
+    for (var a in json.result) {
+      if (Token === json.result[a].Currency){
+        var balance = json.result[a].Balance;
+        return balance;
+      }
+    }
+  }
+//    if (exchange == "CoinbasePro"){
+//    
+//    var key = APIKey
+//    var secret = APISecret
+//    var passphrase = passphrase
+//    var baseUrl = 'https://api.gdax.com';
+//    var nonce = Math.floor(new Date().getTime()/1000);
+//    var command = "/accounts";
+//    var uri = baseUrl.concat(command);
+//    var signature = Utilities.computeHmacSignature(Utilities.MacAlgorithm.HMAC_SHA_512,uri,secret);
+//    signature = signature.map(function(byte){return ('0' + (byte & 0xFF).toString(16)).slice(-2);}).join('')
+//    var headers = {
+//      "CB-ACCESS-KEY": key,
+//      "CB-ACCESS-SIGN": signature,
+//      "CB-ACCESS-TIMESTAMP": nonce,
+//      "CB-ACCESS-PASSPHRASE": passphrase
+//    }
+//    var params = {
+//      "method": "GET",
+//      "header": headers
+//    }
+//    var response = UrlFetchApp.fetch(uri, params);
+//    var json = JSON.parse(response.getContentText());
+//      console.log({message: 'Coinbase', initialData: response});
+//    for (var a in json.result) {
+//      if (Token === json.result[a].Currency){
+//        var balance = json.result[a].Balance;
+//        return balance;
+//      }
+//    }
+//  }
 }
