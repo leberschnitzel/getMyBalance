@@ -20,15 +20,14 @@ https://etherscan.io/myapikey
 Just add it as last parameter and it will be used automatically.
 
 # getMyExchangeBalance
-Testing with Binance at the moment:
-You need to create a view only API Key on Binance for it to work.
+You need to create a view only API Key on Binance and / or Bittrex for it to work.
 
 1. Enter "=getMyExchangeBalance()" into a cell.
-2. Fill the first string with the exchange. Only "Binance" is supported at the moment.
+2. Fill the first string with the exchange. Only "Binance" and "Bittrex" are supported at the moment.
 3. Fill the second string with an token shortname, like "BTC", "ETH" or "NANO".
-4. Fill the third string with the API Key from Binance.
-5. Fill the fourth string with the API Secret from Binance.
-6. The cell will now show the ammount of tokens you selected in that wallet.
+4. Fill the third string with the API Key from the exchange.
+5. Fill the fourth string with the API Secret from the exchange.
+6. The cell will now show the ammount of tokens you selected on that exchange.
 
 You can also point to other cells.
 If A1 contains the exchange name, A2 contains a token shortname, A3 contains the API Key and A4 contains the Secret:
